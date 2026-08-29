@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PalForge Crafting Calculator</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" src="/eel.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <img src="logo.png" alt="PalForge Logo" class="logo-image">
+            PalForge
+        </div>
+        <div class="nav-links">
+            <a href="#" class="active">Calculator</a>
+            <a href="#">Drop Source Maps</a>
+        </div>
+    </nav>
+
+    <main class="dashboard-grid">
+        
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Item Database</h2>
+                <p class="subtitle">Search and add items to your queue</p>
+            </div>
+            <div class="search-controls">
+                <input type="text" id="search-bar" placeholder="Search (e.g., Pal Metal Armor)...">
+                <select id="category-filter">
+                    <option value="all">All Categories</option>
+                    <option value="spheres">Spheres</option>
+                    <option value="weapons">Weapons</option>
+                    <option value="armor">Armor</option>
+                </select>
+            </div>
+            <div class="scroll-container" id="item-results">
+                <div class="placeholder-text">Type to search the database...</div>
+            </div>
+        </section>
+
+        <section class="panel queue-panel">
+            <div class="panel-header">
+                <h2>Active Build Queue</h2>
+                <p class="subtitle">Adjust quantities and priorities</p>
+            </div>
+            <div class="scroll-container" id="build-queue">
+                <div class="placeholder-text">Your queue is empty.</div>
+            </div>
+            <button class="btn-primary" id="calculate-btn">Calculate Base Materials</button>
+        </section>
+
+        <section class="panel results-panel">
+            <div class="panel-header">
+                <h2>Recipe Tree</h2>
+                <p class="subtitle">Hierarchical material breakdown</p>
+            </div>
+            <div class="scroll-container" id="material-breakdown" style="justify-content: flex-start;">
+                
+                <div class="tree-node parent-node">
+                    <input type="checkbox" id="item1">
+                    <label for="item1">Hyper Sphere <span>x1</span></label>
+                </div>
+                
+                <div class="tree-children">
+                    <div class="tree-node">
+                        <input type="checkbox" id="mat1">
+                        <label for="mat1">Paldium Fragment <span>x3</span></label>
+                    </div>
+                    
+                    <div class="tree-node">
+                        <input type="checkbox" id="mat2">
+                        <label for="mat2">Ingot <span class="station-tag">FURNACE</span> <span>x3</span></label>
+                    </div>
+                    
+                    <div class="tree-children">
+                        <div class="tree-node">
+                            <input type="checkbox" id="submat1">
+                            <label for="submat1">Ore <span>x6</span></label>
+                        </div>
+                    </div>
+                    
+                    <div class="tree-node">
+                        <input type="checkbox" id="mat3">
+                        <label for="mat3">Wood <span>x8</span></label>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+</body>
+</html>
