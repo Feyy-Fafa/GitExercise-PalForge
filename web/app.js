@@ -38,19 +38,20 @@ async function fetchItems() {
     });
 }
 
-// --- M1 TASK 3: Interactive Build Queue ---
+// ---// --- M1/M2 TASK 3 & 4: Persistent Interactive Build Queue ---
 let activeQueue = [];
 const queueDiv = document.getElementById('build-queue');
 
-// Add item to queue (or increase quantity if it is already there)
-window.addToQueue = function(name) {
-    const existing = activeQueue.find(i => i.name === name);
-    if (existing) {
-        existing.qty++;
-    } else {
-        activeQueue.push({ name: name, qty: 1 });
-    }
+// Load the queue from the database when the app starts
+async function loadQueueFromDB() {
+    activeQueue = await eel.read_active_queue()();
     renderQueue();
+}
+
+// Add item to queue database (or increase quantity if it is already there)
+window.addToQueue = async function(name) {
+    await eel.add_to_queue_db(name)();
+    await loadQueueFromDB();
 }
 
 // Update the middle UI panel
@@ -76,20 +77,21 @@ function renderQueue() {
     });
 }
 
-// Queue management helper functions
-window.changeQty = function(index, amount) {
-    activeQueue[index].qty += amount;
-    if (activeQueue[index].qty <= 0) {
-        removeFromQueue(index);
-    } else {
-        renderQueue();
-    }
+// Queue management helper functions (DB Sync)
+window.changeQty = async function(index, amount) {
+    const itemName = activeQueue[index].name;
+    await eel.update_queue_qty_db(itemName, amount)();
+    await loadQueueFromDB();
 }
 
-window.removeFromQueue = function(index) {
-    activeQueue.splice(index, 1);
-    renderQueue();
+window.removeFromQueue = async function(index) {
+    const itemName = activeQueue[index].name;
+    await eel.remove_from_queue_db(itemName)();
+    await loadQueueFromDB();
 }
+
+// Boot up sequence: fetch the saved queue immediately
+loadQueueFromDB();
 // --- M1 TASK 4: Dynamic Crafting Tree & Farming Map UI ---
 const calculateBtn = document.getElementById('calculate-btn');
 const breakdownContainer = document.getElementById('material-breakdown');
