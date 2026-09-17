@@ -165,3 +165,57 @@ function renderMaterialBreakdown(data) {
         `;
     });
 }
+// =====================================================================
+// M1 TASK 5: INPUT VALIDATION & ERROR HANDLING
+// =====================================================================
+
+// 1. Setup the Toast Notification Container
+const toastContainer = document.createElement('div');
+toastContainer.className = 'toast-container';
+document.body.appendChild(toastContainer);
+
+window.showToast = function(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast show';
+    toast.innerText = message;
+    toastContainer.appendChild(toast);
+    
+    // Smoothly slide out and remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    }, 3000);
+}
+
+// 2. Override the Calculate Button (Empty Submission Guard)
+const calcBtnElement = document.getElementById('calculate-btn');
+if (calcBtnElement) {
+    // We add this listener *before* the backend call happens
+    calcBtnElement.addEventListener('click', (event) => {
+        if (!activeQueue || activeQueue.length === 0) {
+            event.stopImmediatePropagation(); // Kills the request before it hits Python
+            showToast("⚠️ Cannot calculate: Your build queue is empty.");
+        }
+    }, true); // The 'true' captures the click first
+}
+
+// 3. Upgrade the Quantity Change Logic (Negative Quantity Guard)
+// Replace your existing changeQty function with this validated version
+window.changeQty = async function(index, amount) {
+    const item = activeQueue[index];
+    const newQty = item.qty + amount;
+
+    if (newQty <= 0) {
+        // Validation: Warn the user it's being deleted
+        showToast(`🗑️ ${item.name} removed from queue.`);
+        await eel.remove_from_queue_db(item.name)();
+    } else if (newQty > 9999) {
+        // Validation: Prevent ridiculous numbers breaking the math engine
+        showToast("⚠️ Maximum item quantity exceeded.");
+        return;
+    } else {
+        await eel.update_queue_qty_db(item.name, amount)();
+    }
+    
+    await loadQueueFromDB();
+}
