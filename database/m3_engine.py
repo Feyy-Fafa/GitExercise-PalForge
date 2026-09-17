@@ -1,12 +1,7 @@
 import os
+import sys
 import sqlite3
 import eel
-
-
-# Helper: Connect to your beautiful M2 database
-def get_db_connection():
-    db_path = os.path.join(os.path.dirname(__file__), 'palworld.db')
-    return sqlite3.connect(db_path)
 
 
 # Helper: Find an item's ID just by typing its name
@@ -17,19 +12,39 @@ def get_item_id(item_name, cursor):
 
 
 # =====================================================================
-# M2 TASK 4: BUILD QUEUE CRUD IMPLEMENTATION (SQLite Persistence)
+# M2 TASK 5: DATABASE OPTIMIZATION, ERROR HANDLING & PACKAGING PREP
 # =====================================================================
+def get_db_path():
+    """Ensures the SQLite DB is saved locally and survives PyInstaller packaging."""
+    if getattr(sys, 'frozen', False):
+        # If running as a bundled executable, save DB next to the .exe
+        base_dir = os.path.dirname(sys.executable)
+    else:
+        # If running normally via Python script
+        base_dir = os.path.abspath(os.path.dirname(__file__))
+    
+    return os.path.join(base_dir, 'palworld.db')
+
+
+def get_db_connection():
+    """Establishes connection using the dynamic packaging path."""
+    return sqlite3.connect(get_db_path())
+
+
 def init_queue_table():
     """Ensures the build_queue table exists in the database."""
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS build_queue (
-                item_name TEXT PRIMARY KEY,
-                quantity INTEGER NOT NULL
-            )
-        ''')
-        conn.commit()
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS build_queue (
+                    item_name TEXT PRIMARY KEY,
+                    quantity INTEGER NOT NULL
+                )
+            ''')
+            conn.commit()
+    except sqlite3.Error as e:
+        print(f"[DB ERROR] Failed to initialize table: {e}")
 
 
 # Run this once when the engine starts
@@ -39,47 +54,60 @@ init_queue_table()
 @eel.expose
 def add_to_queue_db(item_name):
     """CREATE/UPDATE: Adds an item, or increments if it already exists."""
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            INSERT INTO build_queue (item_name, quantity)
-            VALUES (?, 1)
-            ON CONFLICT(item_name) DO UPDATE SET quantity = quantity + 1
-        ''', (item_name,))
-        conn.commit()
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO build_queue (item_name, quantity)
+                VALUES (?, 1)
+                ON CONFLICT(item_name) DO UPDATE SET quantity = quantity + 1
+            ''', (item_name,))
+            conn.commit()
+    except sqlite3.Error as e:
+        print(f"[DB ERROR] Failed to add {item_name}: {e}")
 
 
 @eel.expose
 def update_queue_qty_db(item_name, change_amount):
     """UPDATE/DELETE: Adjusts quantity. Deletes item if quantity hits 0."""
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            UPDATE build_queue
-            SET quantity = quantity + ?
-            WHERE item_name = ?
-        ''', (change_amount, item_name))
-        cursor.execute('DELETE FROM build_queue WHERE quantity <= 0')
-        conn.commit()
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                UPDATE build_queue
+                SET quantity = quantity + ?
+                WHERE item_name = ?
+            ''', (change_amount, item_name))
+            cursor.execute('DELETE FROM build_queue WHERE quantity <= 0')
+            conn.commit()
+    except sqlite3.Error as e:
+        print(f"[DB ERROR] Failed to update {item_name}: {e}")
 
 
 @eel.expose
 def remove_from_queue_db(item_name):
     """DELETE: Completely removes an item from the queue."""
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('DELETE FROM build_queue WHERE item_name = ?', (item_name,))
-        conn.commit()
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM build_queue WHERE item_name = ?', (item_name,))
+            conn.commit()
+    except sqlite3.Error as e:
+        print(f"[DB ERROR] Failed to remove {item_name}: {e}")
 
 
 @eel.expose
 def read_active_queue():
     """READ: Fetches the saved queue for the frontend on startup."""
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('SELECT item_name, quantity FROM build_queue')
-        rows = cursor.fetchall()
-        return [{"name": row[0], "qty": row[1]} for row in rows]
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT item_name, quantity FROM build_queue')
+            rows = cursor.fetchall()
+            return [{"name": row[0], "qty": row[1]} for row in rows]
+    except sqlite3.Error as e:
+        print(f"[DB ERROR] Failed to read queue: {e}")
+        return []
 
 
 # =====================================================================
