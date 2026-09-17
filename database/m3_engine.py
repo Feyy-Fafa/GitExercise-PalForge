@@ -1,17 +1,86 @@
-import sqlite3
 import os
+import sqlite3
 import eel
+
 
 # Helper: Connect to your beautiful M2 database
 def get_db_connection():
     db_path = os.path.join(os.path.dirname(__file__), 'palworld.db')
     return sqlite3.connect(db_path)
 
+
 # Helper: Find an item's ID just by typing its name
 def get_item_id(item_name, cursor):
     cursor.execute("SELECT id FROM items WHERE name = ?", (item_name,))
     result = cursor.fetchone()
     return result[0] if result else None
+
+
+# =====================================================================
+# M2 TASK 4: BUILD QUEUE CRUD IMPLEMENTATION (SQLite Persistence)
+# =====================================================================
+def init_queue_table():
+    """Ensures the build_queue table exists in the database."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS build_queue (
+                item_name TEXT PRIMARY KEY,
+                quantity INTEGER NOT NULL
+            )
+        ''')
+        conn.commit()
+
+
+# Run this once when the engine starts
+init_queue_table()
+
+
+@eel.expose
+def add_to_queue_db(item_name):
+    """CREATE/UPDATE: Adds an item, or increments if it already exists."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO build_queue (item_name, quantity)
+            VALUES (?, 1)
+            ON CONFLICT(item_name) DO UPDATE SET quantity = quantity + 1
+        ''', (item_name,))
+        conn.commit()
+
+
+@eel.expose
+def update_queue_qty_db(item_name, change_amount):
+    """UPDATE/DELETE: Adjusts quantity. Deletes item if quantity hits 0."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE build_queue
+            SET quantity = quantity + ?
+            WHERE item_name = ?
+        ''', (change_amount, item_name))
+        cursor.execute('DELETE FROM build_queue WHERE quantity <= 0')
+        conn.commit()
+
+
+@eel.expose
+def remove_from_queue_db(item_name):
+    """DELETE: Completely removes an item from the queue."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM build_queue WHERE item_name = ?', (item_name,))
+        conn.commit()
+
+
+@eel.expose
+def read_active_queue():
+    """READ: Fetches the saved queue for the frontend on startup."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT item_name, quantity FROM build_queue')
+        rows = cursor.fetchall()
+        return [{"name": row[0], "qty": row[1]} for row in rows]
+
 
 # =====================================================================
 # M3 TASK 2: RECURSIVE BILL-OF-MATERIALS (BOM) ENGINE
@@ -21,11 +90,12 @@ def calculate_base_materials(item_name, quantity_needed=1):
         cursor = conn.cursor()
         return _recursive_bom(item_name, quantity_needed, cursor)
 
+
 # The actual recursive loop Ateya designed, upgraded for SQLite
 def _recursive_bom(item_name, quantity_needed, cursor):
     item_id = get_item_id(item_name, cursor)
     if not item_id:
-        return {} # Failsafe if the item doesn't exist
+        return {}  # Failsafe if the item doesn't exist
 
     # Ask the database for the crafting recipe
     cursor.execute('''
@@ -56,6 +126,7 @@ def _recursive_bom(item_name, quantity_needed, cursor):
 
     return base_materials
 
+
 # =====================================================================
 # M3 TASK 3: MULTI-PROJECT MATERIAL AGGREGATOR
 # =====================================================================
@@ -75,6 +146,7 @@ def aggregate_queue(queue_items):
             master_shopping_list[raw_mat] = master_shopping_list.get(raw_mat, 0) + raw_qty
             
     return master_shopping_list
+
 
 # =====================================================================
 # M3 TASK 4: EEL BRIDGE & DROP SOURCE MAPPER (For Frontend UI)
@@ -105,11 +177,12 @@ def calculate_recipe_tree(js_queue):
         formatted_results.append({
             "name": mat_name,
             "quantity": mat_qty,
-            "station": "Base", # Placeholder
+            "station": "Base",  # Placeholder
             "dropSource": mock_drop_source
         })
         
     return formatted_results
+
 
 # =====================================================================
 # THE FINAL TEST (Run this in the terminal!)
