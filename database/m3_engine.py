@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import eel
 
 # Helper: Connect to your beautiful M2 database
 def get_db_connection():
@@ -74,6 +75,41 @@ def aggregate_queue(queue_items):
             master_shopping_list[raw_mat] = master_shopping_list.get(raw_mat, 0) + raw_qty
             
     return master_shopping_list
+
+# =====================================================================
+# M3 TASK 4: EEL BRIDGE & DROP SOURCE MAPPER (For Frontend UI)
+# =====================================================================
+@eel.expose
+def calculate_recipe_tree(js_queue):
+    """
+    Catches the frontend queue, translates it for the math engine, 
+    and sends back formatted data for the UI progress bars and cards.
+    """
+    # 1. Translate JS objects into Python tuples for Ateya's aggregator
+    python_queue = [(item['name'], item['qty']) for item in js_queue]
+    
+    # 2. Run the heavy recursive math
+    raw_materials_dict = aggregate_queue(python_queue)
+    
+    # 3. Format the output back into a list of dictionaries for the Javascript UI
+    formatted_results = []
+    for mat_name, mat_qty in raw_materials_dict.items():
+        # Placeholder drop logic so your UI renders properly today.
+        # Ateya will update this to query the actual database drop tables later!
+        mock_drop_source = f"Farm around starting biomes for {mat_name}"
+        if mat_name == "Ore":
+            mock_drop_source = "Desolate Church fast travel point (Red rocks)"
+        elif mat_name == "Paldium Fragment":
+            mock_drop_source = "Mine blue rocks near riverbanks"
+            
+        formatted_results.append({
+            "name": mat_name,
+            "quantity": mat_qty,
+            "station": "Base", # Placeholder
+            "dropSource": mock_drop_source
+        })
+        
+    return formatted_results
 
 # =====================================================================
 # THE FINAL TEST (Run this in the terminal!)

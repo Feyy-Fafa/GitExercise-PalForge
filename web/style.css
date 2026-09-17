@@ -4,25 +4,25 @@
 }
 
 :root {
-    --palette-navy: #18103F;
+    /* Glassmorphism Color Palette */
+    --palette-navy-glass: rgba(24, 16, 63, 0.55);
     --palette-berry: #932E51;
     --palette-gold: #D9A15B;
+    --palette-cyan: #00e5ff; /* Holographic accent */
 
-    --bg-void: #120b2e;              
-    --panel-chrome: var(--palette-navy); 
+    --bg-void: #090514;              
     
     --gradient-palette: linear-gradient(135deg, var(--palette-berry), var(--palette-gold));
+    --gradient-holo: linear-gradient(135deg, var(--palette-cyan), var(--palette-gold));
     
     --accent-primary: var(--palette-gold);
-    --accent-secondary: #f0c388;
-    
     --text-main: #fbfbfb;            
-    --text-muted: #c9bcdc;
+    --text-muted: #aab4d6;
     
-    /* Smoother, heavily rounded borders */
-    --border-radius: 16px;
+    --border-radius: 20px;
     --border-radius-inner: 12px;
-    --shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+    --glow-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
 }
 
 * {
@@ -32,8 +32,25 @@
     font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
+/* 1. Holographic Scanline Overlay */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(0, 229, 255, 0.02) 0px,
+        rgba(0, 229, 255, 0.02) 2px,
+        transparent 2px,
+        transparent 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+}
+
 body {
-    background-color: var(--bg-void);
+    /* Deep gradient background to make the frosted glass pop */
+    background: radial-gradient(circle at 50% 0%, #1e1445 0%, var(--bg-void) 80%);
     color: var(--text-main);
     height: 100vh;
     display: flex;
@@ -41,28 +58,27 @@ body {
     overflow: hidden;
 }
 
+/* 2. Glassmorphism Navbar */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: var(--panel-chrome);
+    background: var(--palette-navy-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     padding: 1rem 2rem;
-    border-bottom: 3px solid transparent;
-    border-image: var(--gradient-palette) 1;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    border-bottom: var(--glass-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    position: relative;
+    z-index: 10;
 }
 
 .logo {
     font-family: 'AngelicWar', serif;
     font-size: 2.8rem;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
     color: #ffffff;
-    text-shadow: 
-        -1px -1px 0 var(--palette-navy),  
-         1px -1px 0 var(--palette-navy),
-        -1px  1px 0 var(--palette-navy),
-         1px  1px 0 var(--palette-navy),
-         0px  4px 10px rgba(0, 0, 0, 0.9);
+    text-shadow: 0px 0px 15px var(--palette-cyan);
     display: flex;
     align-items: center;
 }
@@ -70,9 +86,9 @@ body {
 .logo-image {
     height: 45px;
     width: auto;
-    object-fit: contain;
     margin-right: 12px;
-    filter: drop-shadow(0px 2px 5px rgba(0, 0, 0, 0.8));
+    filter: drop-shadow(0px 0px 8px var(--palette-cyan));
+    animation: float 3s ease-in-out infinite;
 }
 
 .nav-links a {
@@ -81,11 +97,12 @@ body {
     margin-left: 24px;
     font-weight: 600;
     font-size: 0.95rem;
-    transition: color 0.2s;
+    transition: all 0.3s ease;
 }
 
 .nav-links a:hover, .nav-links a.active {
-    color: var(--accent-primary);
+    color: var(--palette-cyan);
+    text-shadow: 0 0 10px var(--palette-cyan);
 }
 
 .dashboard-grid {
@@ -94,35 +111,42 @@ body {
     gap: 24px;
     padding: 24px;
     flex: 1;
+    position: relative;
+    z-index: 5;
 }
 
+/* 3. Glass Panels with Glowing Borders */
 .panel {
-    background-color: var(--panel-chrome);
-    border: 2px solid transparent;
-    border-image: var(--gradient-palette) 1;
-    
-    /* Rounded outer panel corners */
+    background: var(--palette-navy-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: var(--glass-border);
     border-radius: var(--border-radius);
-    overflow: hidden; /* Ensures inner elements respect the roundness */
-    
     padding: 20px;
     display: flex;
     flex-direction: column;
-    box-shadow: var(--shadow);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.panel:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--glow-shadow), 0 12px 40px rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(0, 229, 255, 0.3);
 }
 
 .panel-header {
     margin-bottom: 16px;
-    border-bottom: 1px solid rgba(147, 46, 81, 0.4); 
+    border-bottom: 1px solid rgba(0, 229, 255, 0.2); 
     padding-bottom: 12px;
 }
 
 .panel-header h2 {
     font-size: 1.2rem;
-    color: var(--accent-primary);
+    color: var(--palette-cyan);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    text-shadow: 0 0 10px rgba(217, 161, 91, 0.3);
+    letter-spacing: 1px;
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
 }
 
 .subtitle {
@@ -131,149 +155,181 @@ body {
     margin-top: 6px;
 }
 
+/* 4. Inputs & Dropdowns */
 input, select {
     width: 100%;
     padding: 12px 14px;
     margin-bottom: 14px;
-    background-color: var(--bg-void);
-    border: 1.5px solid transparent;
-    border-image: var(--gradient-palette) 1;
-    
-    /* Rounded input fields */
+    background: rgba(0, 0, 0, 0.4);
+    border: var(--glass-border);
     border-radius: var(--border-radius-inner);
-    
     color: var(--text-main);
     outline: none;
     font-size: 0.95rem;
-    transition: border-color 0.2s;
+    transition: all 0.3s;
 }
 
 input:focus, select:focus {
-    box-shadow: 0 0 0 2px rgba(217, 161, 91, 0.3);
+    border-color: var(--palette-cyan);
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
 }
 
-input::placeholder {
-    color: rgba(201, 188, 220, 0.4); 
+input::placeholder { color: rgba(170, 180, 214, 0.5); }
+
+/* Customizing the Select Dropdown Specifically */
+select {
+    cursor: pointer;
+    /* Hide the default boring browser arrow */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    /* Add a custom neon cyan arrow instead */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%2300e5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 16px;
+    padding-right: 40px; /* Make room for the new arrow */
 }
 
-.btn-primary {
-    background: var(--gradient-palette);
-    color: #120b2e;
-    border: none;
+/* Styling the actual dropdown menu list */
+select option {
+    background-color: var(--bg-void); /* Deep dark void color instead of gray */
+    color: var(--text-main);
     padding: 14px;
-    
-    /* Rounded button corners */
+    font-weight: 600;
+}
+
+/* Change color when an option is highlighted */
+select option:checked, select option:hover {
+    background-color: rgba(24, 16, 63, 0.9);
+    color: var(--palette-cyan);
+}
+
+/* 5. Gamified Buttons */
+.btn-primary {
+    background: rgba(0, 229, 255, 0.1); /* Subtle glowing cyan tint */
+    color: var(--palette-cyan);
+    border: 1px solid var(--palette-cyan);
+    padding: 14px;
     border-radius: var(--border-radius-inner);
-    
     font-weight: 800;
     font-size: 1rem;
     text-transform: uppercase;
     cursor: pointer;
     margin-top: 16px;
-    transition: all 0.2s ease;
-    width: 100%;
-    box-shadow: 0 4px 15px rgba(147, 46, 81, 0.3);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.2), inset 0 0 10px rgba(0, 229, 255, 0.1);
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
 }
 
 .btn-primary:hover {
-    filter: brightness(1.15);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(217, 161, 91, 0.4);
+    background: rgba(0, 229, 255, 0.25);
+    color: #ffffff;
+    border-color: #ffffff;
+    transform: scale(1.02);
+    box-shadow: 0 0 25px rgba(0, 229, 255, 0.6), inset 0 0 15px rgba(0, 229, 255, 0.3);
+    text-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
 }
 
+/* Micro-interaction: Button shine effect on hover */
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    transform: skewX(-20deg);
+    transition: all 0.5s ease;
+}
+
+.btn-primary:hover::after {
+    left: 150%;
+}
+
+/* 6. Custom Scrollbars */
 .scroll-container {
     flex: 1;
     overflow-y: auto;
-    background-color: var(--bg-void);
-    border: 1.5px solid transparent;
-    border-image: var(--gradient-palette) 1;
-    
-    /* Rounded scroll container */
+    background: rgba(0, 0, 0, 0.2);
+    border: var(--glass-border);
     border-radius: var(--border-radius-inner);
-    
     padding: 15px;
     display: flex;
     flex-direction: column;
 }
 
-.placeholder-text {
-    color: var(--text-muted);
-    text-align: center;
-    font-size: 0.9rem;
-    margin: auto;
-    opacity: 0.7;
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--palette-cyan); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--palette-gold); box-shadow: 0 0 10px var(--palette-gold); }
 
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: var(--bg-void); border-radius: 4px; }
-::-webkit-scrollbar-thumb { background: var(--palette-berry); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--palette-gold); }
-
+/* 7. Tree Nodes & Interactive Lists */
 .tree-node {
     display: flex;
     align-items: center;
     width: 100%;
-    background-color: var(--panel-chrome);
-    padding: 10px 14px;
-    margin-bottom: 6px;
-    border: 1px solid transparent;
-    border-image: var(--gradient-palette) 1;
-    
-    /* Rounded tree nodes */
+    background: rgba(255, 255, 255, 0.03);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    border: var(--glass-border);
     border-radius: var(--border-radius-inner);
+    transition: all 0.2s ease;
+}
+
+.tree-node:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(4px);
+    border-color: rgba(217, 161, 91, 0.4);
 }
 
 .parent-node {
-    background-color: #201347; 
+    background: rgba(217, 161, 91, 0.1); 
     border-left: 4px solid var(--palette-gold);
 }
 
-.tree-children {
-    margin-left: 20px;
-    padding-left: 15px;
-    border-left: 2px solid transparent;
-    border-image: var(--gradient-palette) 1;
-    margin-bottom: 6px;
-}
-
 .tree-node input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
+    width: 16px; height: 16px;
     margin-right: 12px;
-    margin-bottom: 0;
+    accent-color: var(--palette-cyan);
     cursor: pointer;
-    accent-color: var(--palette-gold);
 }
 
 .tree-node label {
-    flex: 1;
-    font-size: 0.9rem;
-    color: var(--text-main);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex: 1; font-size: 0.9rem;
+    display: flex; justify-content: space-between; align-items: center;
     cursor: pointer;
 }
 
-.tree-node label span {
-    color: var(--palette-gold);
-    font-weight: bold;
-}
+.tree-node label span { color: var(--palette-gold); font-weight: bold; }
 
 .station-tag {
     font-size: 0.7rem;
-    background-color: var(--bg-void);
-    padding: 2px 6px;
+    background: rgba(0, 229, 255, 0.15);
+    padding: 4px 8px;
     border-radius: 6px;
-    color: var(--text-muted) !important;
-    margin-left: auto;
-    margin-right: 10px;
+    color: var(--palette-cyan) !important;
+    margin-left: auto; margin-right: 10px;
+    border: 1px solid rgba(0, 229, 255, 0.3);
 }
 
-.tree-node input[type="checkbox"]:checked + label {
-    text-decoration: line-through;
+.placeholder-text {
     color: var(--text-muted);
+    text-align: center; font-size: 0.9rem;
+    margin: auto; opacity: 0.7;
+    animation: pulse 2s infinite;
 }
-.tree-node input[type="checkbox"]:checked + label span {
-    color: var(--text-muted);
+
+/* 8. Dynamic Animations */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-4px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 0.9; text-shadow: 0 0 8px var(--palette-cyan); }
+    100% { opacity: 0.5; }
 }
