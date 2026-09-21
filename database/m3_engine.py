@@ -169,29 +169,41 @@ def aggregate_queue(queue_items):
     return master_shopping_list
 
 # =====================================================================
-# M3 TASK 4: EEL BRIDGE & DROP SOURCE MAPPER (For Frontend UI)
+# M3 TASK 4: EEL BRIDGE & RECURSIVE TREE GENERATOR (For Frontend UI)
 # =====================================================================
 @eel.expose
 def calculate_recipe_tree(js_queue):
-    python_queue = [(item['name'], item['qty']) for item in js_queue]
-    raw_materials_dict = aggregate_queue(python_queue)
+    tree_results = []
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        for item in js_queue:
+            # Build a nested tree for each item in the queue
+            tree_results.append(_build_nested_tree(item['name'], item['qty'], cursor))
+    return tree_results
+
+def _build_nested_tree(item_name, qty, cursor):
+    # Create the current node
+    node = {"name": item_name, "quantity": qty, "children": []}
     
-    formatted_results = []
-    for mat_name, mat_qty in raw_materials_dict.items():
-        mock_drop_source = f"Farm around starting biomes for {mat_name}"
-        if mat_name == "Ore":
-            mock_drop_source = "Desolate Church fast travel point (Red rocks)"
-        elif mat_name == "Paldium Fragment":
-            mock_drop_source = "Mine blue rocks near riverbanks"
-            
-        formatted_results.append({
-            "name": mat_name,
-            "quantity": mat_qty,
-            "station": "Base", 
-            "dropSource": mock_drop_source
-        })
+    item_id = get_item_id(item_name, cursor)
+    if not item_id: 
+        return node
         
-    return formatted_results
+    # Get ingredients
+    cursor.execute('''
+        SELECT i.name, r.quantity 
+        FROM recipes r
+        JOIN items i ON r.ingredient_item_id = i.id
+        WHERE r.crafted_item_id = ?
+    ''', (item_id,))
+    ingredients = cursor.fetchall()
+    
+    # Recursively fetch children
+    for ing_name, ing_qty in ingredients:
+        total_ing_qty = ing_qty * qty
+        node["children"].append(_build_nested_tree(ing_name, total_ing_qty, cursor))
+        
+    return node
 
 if __name__ == "__main__":
     print("--- TESTING M3 TASK 2: Recursive BOM ---")

@@ -13,17 +13,27 @@ def seed_database():
     cursor.execute('DELETE FROM user_queues')
     cursor.execute('DELETE FROM items')
 
-    # 2. INSERT ALL BASE ITEMS (Armors, Spheres, Materials)
+   # 2. INSERT ALL BASE ITEMS (Armors, Spheres, Materials)
     items = [
-        # Materials & Raw
-        ('Corrosive Solvent', 'raw'), ('AI Core', 'materials'), ('Paloxite Ingot', 'materials'),
-        ('Cryogenic Coolant', 'raw'), ('Thermal Core', 'materials'), ('Soralite Ingot', 'materials'),
+        # Base Raw Items (Cannot be crafted)
+        ('Flame Organ', 'raw'), ('Leather', 'raw'), ('High Quality Pal Oil', 'raw'),
+        ('Ice Organ', 'raw'), ('Fiber', 'raw'), ('Paldium Fragment', 'raw'), 
+        ('Wood', 'raw'), ('Stone', 'raw'), ('Hardwood', 'raw'), ('Mythical Wood', 'raw'),
+        ('Ore', 'raw'), ('Pure Quartz', 'raw'), ('Coal', 'raw'), 
+        ('Crude Oil', 'raw'), ('Chromite', 'raw'), ('Hexolite Quartz', 'raw'), 
+        ('Soralite', 'raw'), ('Paloxite', 'raw'), ('World Tree Holy Water', 'raw'),
+        ('Venom Gland', 'raw'), ('Sulfur', 'raw'), ('Electric Organ', 'raw'), 
+        ('Aquatic Pal Fluids', 'raw'), ('Ancient Civilization Core', 'raw'),
+
+        # Crafted Materials (Have recipes)
+        ('Corrosive Solvent', 'materials'), ('Cryogenic Coolant', 'materials'), 
+        ('Thermal Core', 'materials'), ('AI Core', 'materials'), 
+        ('Paloxite Ingot', 'materials'), ('Soralite Ingot', 'materials'),
         ('High Quality Cloth', 'materials'), ('Plasteel', 'materials'), ('Hexolite', 'materials'),
-        ('Pal Metal Ingot', 'materials'), ('Flame Organ', 'raw'), ('Leather', 'raw'),
-        ('Refined Ingot', 'materials'), ('High Quality Pal Oil', 'raw'), ('Ingot', 'materials'),
-        ('Ice Organ', 'raw'), ('Cloth', 'materials'), ('Fiber', 'raw'), ('Hallowed Bar', 'materials'),
-        ('Paldium Fragment', 'raw'), ('Wood', 'raw'), ('Stone', 'raw'), ('Cement', 'materials'),
-        ('Hardwood', 'raw'), ('Mythical Wood', 'raw'),
+        ('Pal Metal Ingot', 'materials'), ('Refined Ingot', 'materials'), ('Ingot', 'materials'),
+        ('Cloth', 'materials'), ('Hallowed Bar', 'materials'), ('Cement', 'materials'),
+        ('Bio Battery', 'materials'), ('Carbon Fiber', 'materials'), ('Computer', 'materials'),
+        ('Circuit Board', 'materials'), ('Polymer', 'materials'),
 
         # Armor Sets
         ('Lightweight Ancient Armor', 'armor'), ('Cold-Resistant Ancient Armor', 'armor'),
@@ -51,6 +61,80 @@ def seed_database():
 
     # 3. INSERT RECIPES
     recipes = [
+        # --- MATERIALS & INGOTS ---
+        # Basic Ingot 
+        ('Ingot', 'Ore', 2),
+        
+        # Pal Metal Ingot
+        ('Pal Metal Ingot', 'Ore', 4),
+        ('Pal Metal Ingot', 'Paldium Fragment', 2),
+        ('Pal Metal Ingot', 'Pure Quartz', 1),
+        
+        # Refined Ingot
+        ('Refined Ingot', 'Ore', 2),
+        ('Refined Ingot', 'Coal', 2),
+        
+        # Plasteel
+        ('Plasteel', 'Crude Oil', 5),
+        ('Plasteel', 'Paldium Fragment', 5),
+        ('Plasteel', 'Ore', 10),
+        
+        # Hexolite
+        ('Hexolite', 'Chromite', 5),
+        ('Hexolite', 'Hexolite Quartz', 12),
+        ('Hexolite', 'Ore', 20),
+        
+        # Paloxite Ingot
+        ('Paloxite Ingot', 'Soralite', 1),
+        ('Paloxite Ingot', 'Paloxite', 2),
+        ('Paloxite Ingot', 'World Tree Holy Water', 1),
+        
+        # Soralite Ingot
+        ('Soralite Ingot', 'Soralite', 2),
+        ('Soralite Ingot', 'Pure Quartz', 2),
+
+        # --- COMPONENTS & INTERMEDIATES ---
+        # Corrosive Solvent
+        ('Corrosive Solvent', 'Venom Gland', 1),
+        ('Corrosive Solvent', 'Sulfur', 1),
+
+        # Cryogenic Coolant
+        ('Cryogenic Coolant', 'Aquatic Pal Fluids', 1),
+        ('Cryogenic Coolant', 'Ice Organ', 1),
+
+        # Thermal Core
+        ('Thermal Core', 'Flame Organ', 4),
+        ('Thermal Core', 'Coal', 8),
+        ('Thermal Core', 'Corrosive Solvent', 2),
+        ('Thermal Core', 'Hexolite', 2),
+
+        # Bio Battery
+        ('Bio Battery', 'Electric Organ', 1),
+        ('Bio Battery', 'Refined Ingot', 1),
+        ('Bio Battery', 'Carbon Fiber', 1), 
+
+        # AI Core
+        ('AI Core', 'Computer', 5),
+        ('AI Core', 'Soralite Ingot', 10),
+        ('AI Core', 'Thermal Core', 2),
+        ('AI Core', 'Ancient Civilization Core', 1),
+
+        # Computer
+        ('Computer', 'Circuit Board', 2),
+        ('Computer', 'Plasteel', 3),
+        ('Computer', 'Bio Battery', 2),
+        ('Computer', 'Carbon Fiber', 2),
+
+        # Circuit Board
+        ('Circuit Board', 'Pure Quartz', 2),
+        ('Circuit Board', 'Polymer', 1),
+        # Polymer
+        ('Polymer', 'High Quality Pal Oil', 2),
+
+        # Carbon Fiber
+        ('Carbon Fiber', 'Coal', 2),
+        ('Carbon Fiber', 'Flame Organ', 1),
+        
         # --- SPHERES ---
         ('Pal Sphere', 'Paldium Fragment', 3),
         ('Mega Sphere', 'Wood', 3), ('Mega Sphere', 'Stone', 3), ('Mega Sphere', 'Ingot', 1), ('Mega Sphere', 'Paldium Fragment', 1),

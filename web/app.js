@@ -119,6 +119,9 @@ if (calculateBtn) {
         try {
             const calculatedData = await eel.calculate_recipe_tree(activeQueue)();
             renderMaterialBreakdown(calculatedData);
+           
+
+            
         } catch (error) {
             console.error("Backend error:", error);
             breakdownContainer.innerHTML = '<div class="placeholder-text" style="color: var(--palette-berry);">Error connecting to backend engine. Make sure Python is running.</div>';
@@ -127,6 +130,7 @@ if (calculateBtn) {
 }
 
 function renderMaterialBreakdown(data) {
+    const breakdownContainer = document.getElementById('material-breakdown');
     breakdownContainer.innerHTML = ''; 
 
     if (!data || data.length === 0) {
@@ -134,35 +138,43 @@ function renderMaterialBreakdown(data) {
         return;
     }
 
-    data.forEach((item, index) => {
-        const fakeProgress = Math.floor(Math.random() * 100); 
-
-        const dropSourceHtml = item.dropSource ? 
-            `<div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px; padding: 6px; background-color: var(--bg-void); border-radius: var(--border-radius-inner);">
-                📍 <strong>Best Source:</strong> ${item.dropSource}
-            </div>` : '';
-
-        const stationHtml = item.station ? `<span class="station-tag">${item.station}</span>` : '';
-
-        breakdownContainer.innerHTML += `
-            <div class="tree-node parent-node" style="flex-direction: column; align-items: flex-start;">
-                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-                    <label for="mat-${index}" style="margin: 0;">
-                        <input type="checkbox" id="mat-${index}"> 
-                        ${item.name} 
-                        ${stationHtml}
-                    </label>
-                    <span>x${item.quantity}</span>
-                </div>
-                
-                <div style="width: 100%; background: var(--bg-void); height: 8px; border-radius: 4px; margin-top: 10px; overflow: hidden;">
-                    <div style="width: ${fakeProgress}%; background: var(--gradient-palette); height: 100%; border-radius: 4px;"></div>
-                </div>
-                
-                ${dropSourceHtml}
-            </div>
-        `;
+    // Loop through the queue items and build their trees
+    data.forEach(rootItem => {
+        breakdownContainer.appendChild(createTreeNode(rootItem));
     });
+}
+
+// Recursive function to build the indented HTML
+function createTreeNode(item) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'tree-hierarchy';
+    
+    // The main item card
+    const nodeHtml = `
+        <div class="tree-node parent-node">
+            <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer;">
+                <input type="checkbox" style="width: 16px; height: 16px;"> 
+                ${item.name}
+            </label>
+            <span style="color: var(--palette-gold); font-weight: bold;">x${item.quantity}</span>
+        </div>
+    `;
+    wrapper.innerHTML = nodeHtml;
+    
+    // If this item has ingredients, create the indented container and loop through them
+    if (item.children && item.children.length > 0) {
+        const childrenContainer = document.createElement('div');
+        childrenContainer.className = 'tree-children';
+        
+        item.children.forEach(child => {
+            childrenContainer.appendChild(createTreeNode(child)); // Recursion!
+        });
+        
+        wrapper.appendChild(childrenContainer);
+    }
+    
+    return wrapper;
+
 }
 
 // =====================================================================
