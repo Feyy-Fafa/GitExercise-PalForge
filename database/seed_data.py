@@ -7,13 +7,39 @@ def seed_database():
     cursor = conn.cursor()
     cursor.execute('PRAGMA foreign_keys = ON;')
 
-    # 1. WIPE OLD DATA (Prevents duplicates when re-running)
-    cursor.execute('DELETE FROM recipes')
-    cursor.execute('DELETE FROM drop_sources')
-    cursor.execute('DELETE FROM user_queues')
-    cursor.execute('DELETE FROM items')
+    # 1. WIPE OLD DATA AND REBUILD BASE TABLES (Bulletproof Method)
+    cursor.execute('DROP TABLE IF EXISTS recipes')
+    cursor.execute('DROP TABLE IF EXISTS drop_sources')
+    cursor.execute('DROP TABLE IF EXISTS user_queues')
+    cursor.execute('DROP TABLE IF EXISTS items')
 
-   # 2. INSERT ALL BASE ITEMS (Armors, Spheres, Materials)
+    cursor.execute('''
+        CREATE TABLE items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE,
+            category TEXT
+        )
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE recipes (
+            crafted_item_id INTEGER,
+            ingredient_item_id INTEGER,
+            quantity INTEGER,
+            FOREIGN KEY(crafted_item_id) REFERENCES items(id),
+            FOREIGN KEY(ingredient_item_id) REFERENCES items(id)
+        )
+    ''')
+    
+    cursor.execute('''
+        CREATE TABLE user_queues (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            item_name TEXT,
+            quantity INTEGER
+        )
+    ''')
+
+    # 2. INSERT ALL BASE ITEMS
     items = [
         # Base Raw Items (Cannot be crafted)
         ('Flame Organ', 'raw'), ('Leather', 'raw'), ('High Quality Pal Oil', 'raw'),
@@ -62,78 +88,24 @@ def seed_database():
     # 3. INSERT RECIPES
     recipes = [
         # --- MATERIALS & INGOTS ---
-        # Basic Ingot 
         ('Ingot', 'Ore', 2),
-        
-        # Pal Metal Ingot
-        ('Pal Metal Ingot', 'Ore', 4),
-        ('Pal Metal Ingot', 'Paldium Fragment', 2),
-        ('Pal Metal Ingot', 'Pure Quartz', 1),
-        
-        # Refined Ingot
-        ('Refined Ingot', 'Ore', 2),
-        ('Refined Ingot', 'Coal', 2),
-        
-        # Plasteel
-        ('Plasteel', 'Crude Oil', 5),
-        ('Plasteel', 'Paldium Fragment', 5),
-        ('Plasteel', 'Ore', 10),
-        
-        # Hexolite
-        ('Hexolite', 'Chromite', 5),
-        ('Hexolite', 'Hexolite Quartz', 12),
-        ('Hexolite', 'Ore', 20),
-        
-        # Paloxite Ingot
-        ('Paloxite Ingot', 'Soralite', 1),
-        ('Paloxite Ingot', 'Paloxite', 2),
-        ('Paloxite Ingot', 'World Tree Holy Water', 1),
-        
-        # Soralite Ingot
-        ('Soralite Ingot', 'Soralite', 2),
-        ('Soralite Ingot', 'Pure Quartz', 2),
+        ('Pal Metal Ingot', 'Ore', 4), ('Pal Metal Ingot', 'Paldium Fragment', 2), ('Pal Metal Ingot', 'Pure Quartz', 1),
+        ('Refined Ingot', 'Ore', 2), ('Refined Ingot', 'Coal', 2),
+        ('Plasteel', 'Crude Oil', 5), ('Plasteel', 'Paldium Fragment', 5), ('Plasteel', 'Ore', 10),
+        ('Hexolite', 'Chromite', 5), ('Hexolite', 'Hexolite Quartz', 12), ('Hexolite', 'Ore', 20),
+        ('Paloxite Ingot', 'Soralite', 1), ('Paloxite Ingot', 'Paloxite', 2), ('Paloxite Ingot', 'World Tree Holy Water', 1),
+        ('Soralite Ingot', 'Soralite', 2), ('Soralite Ingot', 'Pure Quartz', 2),
 
         # --- COMPONENTS & INTERMEDIATES ---
-        # Corrosive Solvent
-        ('Corrosive Solvent', 'Venom Gland', 1),
-        ('Corrosive Solvent', 'Sulfur', 1),
-
-        # Cryogenic Coolant
-        ('Cryogenic Coolant', 'Aquatic Pal Fluids', 1),
-        ('Cryogenic Coolant', 'Ice Organ', 1),
-
-        # Thermal Core
-        ('Thermal Core', 'Flame Organ', 4),
-        ('Thermal Core', 'Coal', 8),
-        ('Thermal Core', 'Corrosive Solvent', 2),
-        ('Thermal Core', 'Hexolite', 2),
-
-        # Bio Battery
-        ('Bio Battery', 'Electric Organ', 1),
-        ('Bio Battery', 'Refined Ingot', 1),
-        ('Bio Battery', 'Carbon Fiber', 1), 
-
-        # AI Core
-        ('AI Core', 'Computer', 5),
-        ('AI Core', 'Soralite Ingot', 10),
-        ('AI Core', 'Thermal Core', 2),
-        ('AI Core', 'Ancient Civilization Core', 1),
-
-        # Computer
-        ('Computer', 'Circuit Board', 2),
-        ('Computer', 'Plasteel', 3),
-        ('Computer', 'Bio Battery', 2),
-        ('Computer', 'Carbon Fiber', 2),
-
-        # Circuit Board
-        ('Circuit Board', 'Pure Quartz', 2),
-        ('Circuit Board', 'Polymer', 1),
-        # Polymer
+        ('Corrosive Solvent', 'Venom Gland', 1), ('Corrosive Solvent', 'Sulfur', 1),
+        ('Cryogenic Coolant', 'Aquatic Pal Fluids', 1), ('Cryogenic Coolant', 'Ice Organ', 1),
+        ('Thermal Core', 'Flame Organ', 4), ('Thermal Core', 'Coal', 8), ('Thermal Core', 'Corrosive Solvent', 2), ('Thermal Core', 'Hexolite', 2),
+        ('Bio Battery', 'Electric Organ', 1), ('Bio Battery', 'Refined Ingot', 1), ('Bio Battery', 'Carbon Fiber', 1), 
+        ('AI Core', 'Computer', 5), ('AI Core', 'Soralite Ingot', 10), ('AI Core', 'Thermal Core', 2), ('AI Core', 'Ancient Civilization Core', 1),
+        ('Computer', 'Circuit Board', 2), ('Computer', 'Plasteel', 3), ('Computer', 'Bio Battery', 2), ('Computer', 'Carbon Fiber', 2),
+        ('Circuit Board', 'Pure Quartz', 2), ('Circuit Board', 'Polymer', 1),
         ('Polymer', 'High Quality Pal Oil', 2),
-
-        # Carbon Fiber
-        ('Carbon Fiber', 'Coal', 2),
-        ('Carbon Fiber', 'Flame Organ', 1),
+        ('Carbon Fiber', 'Coal', 2), ('Carbon Fiber', 'Flame Organ', 1),
         
         # --- SPHERES ---
         ('Pal Sphere', 'Paldium Fragment', 3),
@@ -173,8 +145,74 @@ def seed_database():
             VALUES (?, ?, ?)
         ''', (get_id(crafted), get_id(ingredient), qty))
 
+    # 4. INSERT DROP SOURCES (Drop Maps Feature)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS drop_sources (
+            item_name TEXT,
+            source TEXT,
+            UNIQUE(item_name, source)
+        )
+    ''')
+
+    drop_data = [
+        ("Flame Organ", "rooby, Kelpsea Ignis, Flambelle at ranch"),
+        ("Leather", "surfent at ranch"),
+        ("High Quality Pal Oil", "Dumud at ranch"),
+        ("Ice Organ", "Foxcicle at ranch"),
+        ("Fiber", "Crafted at Crusher"),
+        ("Paldium Fragment", "Crafted at Crusher"),
+        ("Paldium Fragment", "Mining Paldium Rocks"),
+        ("Paldium Fragment", "Random drop from mining Stone"),
+        ("Wood", "Lumbering trees"),
+        ("Wood", "Logging site"),
+        ("Stone", "Mining rocks"),
+        ("Stone", "Mining Site"),
+        ("Hardwood", "Logging site 2"),
+        ("Mythical Wood", "Lumbering Trees at the World Tree"),
+        ("Mythical Wood", "Ancient Relic Recycler"),
+        ("Ore", "Mining Ore Nodes"),
+        ("Ore", "Ore mining site"),
+        ("Ore", "Ore mining site 2"),
+        ("Pure Quartz", "Mined at Pure quatz nodes found at Astral Mountains"),
+        ("Pure Quartz", "Pure Quartz Quarry"),
+        ("Coal", "Coal Rocks"),
+        ("Coal", "Coal Quarry"),
+        ("Crude Oil", "Crude oil Extractor over crude oil deposit"),
+        ("Crude Oil", "Treasure Chest"),
+        ("Crude Oil", "Oil rigs"),
+        ("Crude Oil", "Syndicate Thugs"),
+        ("Chromite", "Capture or butcher Smokie"),
+        ("Chromite", "Using Smokie's(Pal) partner skill in dungeons and around Feybreak"),
+        ("Chromite", "Ancient Material Synthesizer"),
+        ("Hexolite Quartz", "Mine at Hexolite Node at Feybreak Island"),
+        ("Hexolite Quartz", "Hexolite Quartz Mine"),
+        ("Soralite", "Mining Soralite nodes at Sunreach isle"),
+        ("Soralite", "Soralite Quarry"),
+        ("Paloxite", "Mining Paloxite Node at World Tree"),
+        ("World Tree Holy Water", "Defeating Pals in the World Tree"),
+        ("Venom Gland", "Depresso"),
+        ("Venom Gland", "Capricity Noct at ranch"),
+        ("Sulfur", "Mining Sulfur Rocks at Volcanic regions"),
+        ("Sulfur", "Sulfur Mine"),
+        ("Electric Organ", "Sparkit at ranch"),
+        ("Aquatic Pal Fluids", "Kelpsea (Pal) at ranch"),
+        ("Ancient Civilization Core", "Expeditions"),
+        ("Ancient Civilization Core", "Ancient Relic Recycler"),
+        ("Ancient Civilization Core", "Oil rigs"),
+        ("Thermal Core", "Dropped By Aegidron"),
+        ("High quality Pal Cloth", "Sibelyx at ranch"),
+        ("Cloth", "Crafted for 2 wool"),
+        ("Hallowed Bar", "Defeating enemies in Sealed Realm of Terraria"),
+        ("Polymer", "Crafted from High Quality Pal Oil")
+    ]
+
+    cursor.executemany('''
+        INSERT OR IGNORE INTO drop_sources (item_name, source) 
+        VALUES (?, ?)
+    ''', drop_data)
+
     conn.commit()
-    print(f"M2 Task 2 Complete: {len(items)} items and {len(recipes)} recipe links seeded!")
+    print(f"Database successfully seeded with {len(items)} items and {len(recipes)} recipes, plus drop sources!")
     conn.close()
 
 if __name__ == "__main__":

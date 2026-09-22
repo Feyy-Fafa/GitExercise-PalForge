@@ -17,9 +17,7 @@ async function fetchItems() {
         return;
     }
     
-    // Pass both query and category to Python
     const items = await eel.search_items(query, category)();
-    
     resultsDiv.innerHTML = '';
     
     if (items.length === 0) {
@@ -46,10 +44,30 @@ const queueDiv = document.getElementById('build-queue');
 async function loadQueueFromDB() {
     activeQueue = await eel.read_active_queue()();
     renderQueue();
+    
+    // 1. Check if we have a saved calculated tree from a previous visit
+    const savedTree = localStorage.getItem('calculatedTreeData');
+    if (savedTree) {
+        renderMaterialBreakdown(JSON.parse(savedTree));
+    } else {
+        // 2. If no tree is calculated, just send the top-level queue to the drop map
+        const neededItemsArray = activeQueue.map(item => item.name);
+        localStorage.setItem('activeQueueItems', JSON.stringify(neededItemsArray));
+    }
+}
+
+// Wipes the saved math if you change your queue
+function wipeTreeData() {
+    localStorage.removeItem('calculatedTreeData');
+    const breakdownContainer = document.getElementById('material-breakdown');
+    if (breakdownContainer) {
+        breakdownContainer.innerHTML = '<div class="placeholder-text">Queue updated. Please click Calculate again.</div>';
+    }
 }
 
 window.addToQueue = async function(name) {
     await eel.add_to_queue_db(name)();
+    wipeTreeData();
     await loadQueueFromDB();
 }
 
@@ -88,12 +106,14 @@ window.changeQty = async function(index, amount) {
     } else {
         await eel.update_queue_qty_db(item.name, amount)();
     }
+    wipeTreeData();
     await loadQueueFromDB();
 }
 
 window.removeFromQueue = async function(index) {
     const itemName = activeQueue[index].name;
     await eel.remove_from_queue_db(itemName)();
+    wipeTreeData();
     await loadQueueFromDB();
 }
 
@@ -120,7 +140,22 @@ if (calculateBtn) {
             const calculatedData = await eel.calculate_recipe_tree(activeQueue)();
             renderMaterialBreakdown(calculatedData);
            
+            // SAVE THE TREE: Keeps it on the screen if you leave and come back
+            localStorage.setItem('calculatedTreeData', JSON.stringify(calculatedData));
 
+            // DEEP HIGHLIGHTING: Grab every single raw material from the tree for the drop map
+            const allNeededItems = new Set();
+            function extractItems(node) {
+                allNeededItems.add(node.name);
+                if (node.children) {
+                    node.children.forEach(extractItems);
+                }
+            }
+            calculatedData.forEach(extractItems);
+            
+            // Send this massive list to the drop manager
+            localStorage.setItem('activeQueueItems', JSON.stringify(Array.from(allNeededItems)));
+            showToast("✅ Calculation complete! Materials highlighted in Drop Maps.");
             
         } catch (error) {
             console.error("Backend error:", error);
@@ -131,6 +166,8 @@ if (calculateBtn) {
 
 function renderMaterialBreakdown(data) {
     const breakdownContainer = document.getElementById('material-breakdown');
+    if (!breakdownContainer) return; // safeguard if called on the wrong page
+    
     breakdownContainer.innerHTML = ''; 
 
     if (!data || data.length === 0) {
@@ -138,18 +175,15 @@ function renderMaterialBreakdown(data) {
         return;
     }
 
-    // Loop through the queue items and build their trees
     data.forEach(rootItem => {
         breakdownContainer.appendChild(createTreeNode(rootItem));
     });
 }
 
-// Recursive function to build the indented HTML
 function createTreeNode(item) {
     const wrapper = document.createElement('div');
     wrapper.className = 'tree-hierarchy';
     
-    // The main item card
     const nodeHtml = `
         <div class="tree-node parent-node">
             <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer;">
@@ -161,20 +195,18 @@ function createTreeNode(item) {
     `;
     wrapper.innerHTML = nodeHtml;
     
-    // If this item has ingredients, create the indented container and loop through them
     if (item.children && item.children.length > 0) {
         const childrenContainer = document.createElement('div');
         childrenContainer.className = 'tree-children';
         
         item.children.forEach(child => {
-            childrenContainer.appendChild(createTreeNode(child)); // Recursion!
+            childrenContainer.appendChild(createTreeNode(child));
         });
         
         wrapper.appendChild(childrenContainer);
     }
     
     return wrapper;
-
 }
 
 // =====================================================================

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drop Source Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" src="/eel.js"></script>
+</head>
+<body>
+    <div class="drop-manager-container">
+        <button id="return-btn" class="glass-btn" onclick="window.location.href='index.html'">
+            &#8592; Return to Calculator
+        </button>
+
+        <h2>Material Drop Sources</h2>
+        <div class="source-grid" id="source-grid"></div>
+    </div>
+
+    <script>
+        window.onload = async function() {
+            const sourceGrid = document.getElementById('source-grid');
+            
+            // pull queue from local storage, empty array if none
+            const storedQueue = localStorage.getItem('activeQueueItems');
+            const neededItems = storedQueue ? JSON.parse(storedQueue) : [];
+            
+            // grab all the drop data from eel/python
+            const dropData = await eel.get_all_drop_sources()();
+            const allItemNames = Object.keys(dropData);
+
+            // sort it so the stuff we actually need rn goes to the top, rest is alphabetical
+            allItemNames.sort((a, b) => {
+                const aNeeded = neededItems.includes(a);
+                const bNeeded = neededItems.includes(b);
+                
+                if (aNeeded && !bNeeded) return -1; // a goes up
+                if (!aNeeded && bNeeded) return 1;  // b goes up
+                return a.localeCompare(b);          // just sort normal if both are the same
+            });
+
+            sourceGrid.innerHTML = '';
+            
+            allItemNames.forEach(itemName => {
+                const sources = dropData[itemName];
+                const isNeeded = neededItems.includes(itemName);
+
+                let listHtml = '';
+                sources.forEach(source => {
+                    listHtml += `<li>${source}</li>`;
+                });
+
+                const card = document.createElement('div');
+                // if its in the queue give it the gold highlight class
+                card.className = `source-card ${isNeeded ? 'needed-card' : ''}`;
+                
+                // little badge for the needed ones
+                const badgeHtml = isNeeded ? `<span class="priority-badge">Required</span>` : '';
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h3>${itemName}</h3>
+                        ${badgeHtml}
+                    </div>
+                    <ul class="source-list">
+                        ${listHtml}
+                    </ul>
+                `;
+                
+                sourceGrid.appendChild(card);
+            });
+        };
+    </script>
+</body>
+</html>
