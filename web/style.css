@@ -458,3 +458,106 @@ select option:checked, select option:hover {
     justify-content: space-between;
     align-items: center;
 }
+.drop-manager-container {
+    padding: 30px;
+    color: #fff;
+    max-width: 1200px;
+    margin: 0 auto;
+    /* Forces the container to be scrollable */
+    height: 100vh;
+    overflow-y: auto;
+    box-sizing: border-box; 
+}
+.glass-btn {
+    background: rgba(0, 229, 255, 0.1);
+    border: 1px solid rgba(0, 229, 255, 0.4);
+    color: #00e5ff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+    margin-bottom: 25px;
+    display: inline-block;
+}
+
+.glass-btn:hover {
+    background: rgba(0, 229, 255, 0.2);
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+}
+
+.source-grid {
+    display: grid;
+    /* Forces exactly 3 equal-width columns per row */
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 20px;
+}
+
+.source-card {
+    background: rgba(20, 20, 30, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.source-card h3 {
+    color: var(--palette-gold, #f39c12);
+    margin-top: 0;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 8px;
+}
+
+.source-list {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.source-list li {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 8px;
+    color: #b0b0c0;
+    font-size: 0.95rem;
+}
+
+.source-list li::before {
+    content: "•";
+    color: #00e5ff;
+    position: absolute;
+    left: 0;
+    font-size: 1.2rem;
+    line-height: 1rem;
+}
+
+.source-card.needed-card {
+    border: 1px solid var(--palette-gold, #f39c12);
+    box-shadow: 0 0 15px rgba(243, 156, 18, 0.15);
+    background: rgba(40, 30, 20, 0.8);
+    transform: translateY(-2px);
+}
+
+.source-card.needed-card h3 {
+    color: #f39c12; 
+    border-bottom: 1px solid rgba(243, 156, 18, 0.3);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.priority-badge {
+    background: rgba(243, 156, 18, 0.2);
+    color: #f39c12;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border: 1px solid rgba(243, 156, 18, 0.5);
+}
