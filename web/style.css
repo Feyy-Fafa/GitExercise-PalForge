@@ -372,3 +372,89 @@ select option:checked, select option:hover {
 .toast.show {
     transform: translateX(0);
 }
+/* Nested Tree Structure */
+.tree-hierarchy {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+
+.tree-node {
+    background: rgba(20, 20, 30, 0.6);
+    border: 1px solid var(--palette-gold);
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#material-breakdown {
+    max-height: 65vh; /* Capping height at 65vh so the container doesn't break the main CSS grid during the demo */
+    overflow-y: auto;
+    padding-right: 10px; /* Added buffer space so the scrollbar doesn't clip into the nested tree labels */
+}
+
+/* Overriding default browser scrollbars to fit the custom glassmorphism aesthetic */
+#material-breakdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+#material-breakdown::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2); /* Subtle dark track to blend with the translucent panel */
+    border-radius: 4px;
+}
+
+#material-breakdown::-webkit-scrollbar-thumb {
+    background: var(--palette-berry, #ff4d4d); /* Reusing the berry accent variable to match the recursive tree lines */
+    border-radius: 4px;
+}
+
+/* 1. The container holding the group of ingredients */
+.tree-children {
+    position: relative;
+    margin-left: 12px;
+    padding-left: 15px;
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 2. Draw a clean vertical backbone that stops precisely at the last child using ::before */
+.tree-children::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: calc(100% - 20px); /* Stops right at the center of the last item */
+    background: var(--palette-berry);
+}
+
+/* 3. Base hierarchy wrapper */
+.tree-hierarchy {
+    position: relative;
+    width: 100%;
+}
+
+/* 4. Individual horizontal connector stubs pointing to each box */
+.tree-children > .tree-hierarchy::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -15px;
+    width: 15px;
+    height: 2px;
+    background: var(--palette-berry);
+}
+
+/* 5. Clean styling for the recipe node boxes */
+.tree-node {
+    background: rgba(20, 20, 30, 0.6);
+    border: 1px solid var(--palette-gold);
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
