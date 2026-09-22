@@ -501,6 +501,8 @@ select option:checked, select option:hover {
     border-radius: 10px;
     padding: 20px;
     backdrop-filter: blur(10px);
+    
+    transition: all 0.3s ease; 
 }
 
 .source-card h3 {
@@ -560,4 +562,22 @@ select option:checked, select option:hover {
     font-size: 0.75rem;
     font-weight: bold;
     border: 1px solid rgba(243, 156, 18, 0.5);
+}
+/* Hover effect for NORMAL items (Cyan glow) */
+.source-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(0, 229, 255, 0.6); 
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+}
+
+/* Hover effect for REQUIRED items (Intense Gold glow) */
+.source-card.needed-card:hover {
+    transform: translateY(-5px); /* Floats slightly higher than normal items */
+    border-color: #f39c12; 
+    box-shadow: 0 0 25px rgba(243, 156, 18, 0.6); 
+}
+.scroll-container {
+    max-height: 350px;
+    overflow-y: auto;
+    padding-right: 10px;
 }
