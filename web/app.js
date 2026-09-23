@@ -112,6 +112,8 @@ window.changeQty = async function(index, amount) {
 
 window.removeFromQueue = async function(index) {
     const itemName = activeQueue[index].name;
+    // Trigger the notification
+    showToast(`🗑️ ${itemName} removed from queue.`);
     await eel.remove_from_queue_db(itemName)();
     wipeTreeData();
     await loadQueueFromDB();
