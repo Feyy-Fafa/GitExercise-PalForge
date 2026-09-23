@@ -38,6 +38,12 @@ def seed_database():
             quantity INTEGER
         )
     ''')
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS inventory (
+        item_name TEXT PRIMARY KEY,
+        quantity INTEGER DEFAULT 0
+    )
+''')
 
     # 2. INSERT ALL BASE ITEMS
     items = [

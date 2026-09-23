@@ -581,3 +581,42 @@ select option:checked, select option:hover {
     overflow-y: auto;
     padding-right: 10px;
 }
+/* =========================================
+   RECIPE TREE ACCORDION ANIMATIONS
+   ========================================= */
+
+.toggle-icon {
+    display: inline-block;
+    font-size: 0.7rem;
+    color: var(--palette-gold); /* Matches your quantity numbers */
+    transition: transform 0.3s ease;
+    width: 12px;
+    text-align: center;
+}
+
+/* Rotates the arrow to point right when closed */
+.toggle-icon.rotated {
+    transform: rotate(-90deg);
+}
+
+/* Keeps items perfectly aligned even if they don't have an arrow */
+.empty-icon {
+    display: inline-block;
+    width: 12px; 
+}
+
+/* The wrapper that holds all the nested sub-materials */
+.collapsible-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease, margin 0.3s ease;
+    max-height: 5000px; /* Arbitrary large number to allow full expansion */
+    opacity: 1;
+}
+
+/* The state applied when a user clicks to hide the materials */
+.collapsible-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+}

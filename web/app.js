@@ -186,10 +186,18 @@ function createTreeNode(item) {
     const wrapper = document.createElement('div');
     wrapper.className = 'tree-hierarchy';
     
+    // Check if the item actually has raw materials underneath it
+    const hasChildren = item.children && item.children.length > 0;
+    const toggleIcon = hasChildren ? `<span class="toggle-icon">▼</span>` : `<span class="empty-icon"></span>`;
+
+    // Only make the row clickable if it has children
+    const clickHandler = hasChildren ? `onclick="toggleNode(this)"` : '';
+
     const nodeHtml = `
-        <div class="tree-node parent-node">
-            <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer;">
-                <input type="checkbox" style="width: 16px; height: 16px;"> 
+        <div class="tree-node parent-node" ${clickHandler} style="cursor: ${hasChildren ? 'pointer' : 'default'}; user-select: none;">
+            <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: inherit;">
+                ${toggleIcon}
+                <input type="checkbox" style="width: 16px; height: 16px;" onclick="event.stopPropagation();"> 
                 ${item.name}
             </label>
             <span style="color: var(--palette-gold); font-weight: bold;">x${item.quantity}</span>
@@ -197,9 +205,10 @@ function createTreeNode(item) {
     `;
     wrapper.innerHTML = nodeHtml;
     
-    if (item.children && item.children.length > 0) {
+    if (hasChildren) {
         const childrenContainer = document.createElement('div');
-        childrenContainer.className = 'tree-children';
+        // Add 'collapsible-content' for our CSS to target
+        childrenContainer.className = 'tree-children collapsible-content'; 
         
         item.children.forEach(child => {
             childrenContainer.appendChild(createTreeNode(child));
@@ -209,6 +218,21 @@ function createTreeNode(item) {
     }
     
     return wrapper;
+}
+
+// Global function to handle the open/close animation
+window.toggleNode = function(element) {
+    const childrenContainer = element.nextElementSibling;
+    const icon = element.querySelector('.toggle-icon');
+    
+    if (childrenContainer && childrenContainer.classList.contains('collapsible-content')) {
+        // Toggle the hidden class
+        childrenContainer.classList.toggle('collapsed');
+        // Rotate the arrow icon
+        if (icon) {
+            icon.classList.toggle('rotated');
+        }
+    }
 }
 
 // =====================================================================

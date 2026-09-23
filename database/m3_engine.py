@@ -205,6 +205,27 @@ def _build_nested_tree(item_name, qty, cursor):
         
     return node
 
+@eel.expose
+def update_inventory_db(item_name, quantity):
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        if quantity <= 0:
+            cursor.execute("DELETE FROM inventory WHERE item_name = ?", (item_name,))
+        else:
+            cursor.execute('''
+                INSERT INTO inventory (item_name, quantity) 
+                VALUES (?, ?)
+                ON CONFLICT(item_name) DO UPDATE SET quantity = ?
+            ''', (item_name, quantity, quantity))
+        conn.commit()
+
+@eel.expose
+def get_inventory_db():
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT item_name, quantity FROM inventory")
+        return {row[0]: row[1] for row in cursor.fetchall()}
+
 if __name__ == "__main__":
     print("--- TESTING M3 TASK 2: Recursive BOM ---")
     print("Materials for 1 Legendary Sphere:")
@@ -218,3 +239,5 @@ if __name__ == "__main__":
     ]
     print("Total master shopping list for the queue:")
     print(aggregate_queue(player_queue))
+
+    
