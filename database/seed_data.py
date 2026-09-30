@@ -217,6 +217,17 @@ def seed_database():
         VALUES (?, ?)
     ''', drop_data)
 
+# System Info Table (For tracking app version)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS system_info (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        )
+    ''')
+
+    # Set the baseline version to 1.0 on a fresh install
+    cursor.execute('INSERT OR IGNORE INTO system_info (key, value) VALUES ("db_version", "1.0")')
+
     conn.commit()
     print(f"Database successfully seeded with {len(items)} items and {len(recipes)} recipes, plus drop sources!")
     conn.close()
