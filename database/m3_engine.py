@@ -1,3 +1,7 @@
+import urllib.request
+import json
+import sqlite3
+
 import os
 import sys
 import sqlite3
@@ -218,3 +222,50 @@ if __name__ == "__main__":
     ]
     print("Total master shopping list for the queue:")
     print(aggregate_queue(player_queue))
+
+REMOTE_URL = "https://gist.githubusercontent.com/Feyy-Fafa/4076b8b08cd4e6798e929a7ddf83a7a8/raw/d04553961ca7a89c8360430bc8c5781c2ae9b2b4/palworld_updates.json" # Mohamad's raw Gist link goes here!
+
+def check_for_updates():
+    print("Checking for PalForge updates...")
+    try:
+        # 1. Connect and get the local version
+        conn = sqlite3.connect('database/palworld.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT value FROM system_info WHERE key='db_version'")
+        local_version = float(cursor.fetchone()[0])
+
+        # 2. Fetch the remote JSON data from the Gist
+        response = urllib.request.urlopen(REMOTE_URL)
+        remote_data = json.loads(response.read())
+        remote_version = float(remote_data['version'])
+
+        # 3. Compare and Patch
+        if remote_version > local_version:
+            print(f"Update found! Downloading Version {remote_version}...")
+            
+          # Inject new items
+            for item in remote_data.get('new_items', []):
+                cursor.execute("INSERT OR IGNORE INTO items (name, category) VALUES (?, ?)", 
+                               (item['name'], item['category']))
+            
+            # Inject new recipes (Needs to lookup the new IDs first)
+            for recipe in remote_data.get('new_recipes', []):
+                cursor.execute("SELECT id FROM items WHERE name=?", (recipe['crafted_item_name'],))
+                crafted_id = cursor.fetchone()[0]
+                
+                cursor.execute("SELECT id FROM items WHERE name=?", (recipe['ingredient_item_name'],))
+                ingredient_id = cursor.fetchone()[0]
+                
+                cursor.execute("INSERT OR IGNORE INTO recipes (crafted_item_id, ingredient_item_id, quantity) VALUES (?, ?, ?)",
+                               (crafted_id, ingredient_id, recipe['quantity']))
+            
+            # Lock in the new version number
+            cursor.execute("UPDATE system_info SET value=? WHERE key='db_version'", (str(remote_version),))
+            conn.commit()
+            print("Update successfully installed!")
+        else:
+            print("PalForge is up to date.")
+            
+        conn.close()
+    except Exception as e:
+        print(f"Could not check for updates (running offline mode). Error: {e}")
