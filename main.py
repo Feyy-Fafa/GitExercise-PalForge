@@ -23,4 +23,8 @@ def get_all_drop_sources():
 
 # Start the application
 if __name__ == '__main__':
-    eel.start('index.html', size=(1100, 750))
+    # 1. Run the web server check BEFORE the UI loads
+    m3_engine.check_for_updates()
+    
+    # 2. Start the Eel window
+    eel.start('index.html', size=(1200, 800))
