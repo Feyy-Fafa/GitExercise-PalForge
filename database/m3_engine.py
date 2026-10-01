@@ -174,13 +174,38 @@ def aggregate_queue(queue_items):
 @eel.expose
 def calculate_recipe_tree(js_queue):
     tree_results = []
+    queue_tuples = []
+    
     with get_db_connection() as conn:
         cursor = conn.cursor()
         for item in js_queue:
-            # Build a nested tree for each item in the queue
+            # Build the nested tree for Fairos's Accordion UI
             tree_results.append(_build_nested_tree(item['name'], item['qty'], cursor))
-    return tree_results
-
+            # Prep the tuple format needed for the aggregator
+            queue_tuples.append((item['name'], item['qty']))
+            
+    # 1. Get total raw materials using Ateya's existing aggregator
+    total_raw_materials = aggregate_queue(queue_tuples)
+    
+    # 2. Get user's current inventory using Noor's new database function
+    current_inventory = get_inventory_db()
+    
+    # 3. Calculate deficit (Ateya's core mathematical upgrade)
+    deficit_materials = {}
+    for item, total_needed in total_raw_materials.items():
+        owned = current_inventory.get(item, 0)
+        still_need = total_needed - owned
+        
+        # Only add to the deficit list if the user doesn't have enough
+        if still_need > 0:
+            deficit_materials[item] = still_need
+            
+    # Pass the multi-part payload back across the Eel bridge
+    return {
+        "visual_tree": tree_results,
+        "deficit_totals": deficit_materials,
+        "total_raw_materials": total_raw_materials
+    }
 def _build_nested_tree(item_name, qty, cursor):
     # Create the current node
     node = {"name": item_name, "quantity": qty, "children": []}
@@ -204,6 +229,8 @@ def _build_nested_tree(item_name, qty, cursor):
         node["children"].append(_build_nested_tree(ing_name, total_ing_qty, cursor))
         
     return node
+        
+    
 
 @eel.expose
 def update_inventory_db(item_name, quantity):
