@@ -20,7 +20,7 @@ LOCAL_DB_PATH = os.path.join(application_path, 'items.json')
 
 def fetch_remote_database():
     """Pulls the latest items.json from the GitHub raw URL on startup"""
-    remote_url = "https://raw.githubusercontent.com/Feyy-Fafa/GitExercise-PalForge/main/items.json"
+    remote_url = "https://raw.githubusercontent.com/Feyy-Fafa/GitExercise-PalForge/ui-refractor-updates/items.json"
     try:
         urllib.request.urlretrieve(remote_url, LOCAL_DB_PATH)
         print("Successfully updated item database from remote source!")
