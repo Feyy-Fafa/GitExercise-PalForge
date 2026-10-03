@@ -1,0 +1,17 @@
+{
+  "version": 1.1,
+  "release_notes": "Supervisor Demo Payload - Meteorite Fragment Injection",
+  "new_items": [
+    {
+      "name": "Meteorite Fragment",
+      "category": "materials"
+    }
+  ],
+  "new_recipes": [
+    {
+      "crafted_item_name": "Meteorite Fragment",
+      "ingredient_item_name": "Stone",
+      "quantity": 5
+    }
+  ]
+}
