@@ -1,9 +1,17 @@
 {
-  "version": 1.1,
-  "release_notes": "Supervisor Demo Payload - Meteorite Fragment Injection",
+  "version": 1.2,
+  "release_notes": "Cumulative update: Sakurajima items and Meteorite Fragment",
   "new_items": [
     {
       "name": "Meteorite Fragment",
+      "category": "materials"
+    },
+    {
+      "name": "Plasteel",
+      "category": "materials"
+    },
+    {
+      "name": "Hexagonal Plate",
       "category": "materials"
     }
   ],
@@ -12,6 +20,21 @@
       "crafted_item_name": "Meteorite Fragment",
       "ingredient_item_name": "Stone",
       "quantity": 5
+    },
+    {
+      "crafted_item_name": "Plasteel",
+      "ingredient_item_name": "Paldium Fragment",
+      "quantity": 5
+    },
+    {
+      "crafted_item_name": "Plasteel",
+      "ingredient_item_name": "Crude Oil",
+      "quantity": 5
+    },
+    {
+      "crafted_item_name": "Hexagonal Plate",
+      "ingredient_item_name": "Plasteel",
+      "quantity": 2
     }
   ]
 }
