@@ -172,6 +172,7 @@ def aggregate_queue(queue_items):
             master_shopping_list[raw_mat] = master_shopping_list.get(raw_mat, 0) + raw_qty
     return master_shopping_list
 
+
 # =====================================================================
 # M3 TASK 4: EEL BRIDGE & RECURSIVE TREE GENERATOR (For Frontend UI)
 # =====================================================================
@@ -183,32 +184,21 @@ def calculate_recipe_tree(js_queue):
     with get_db_connection() as conn:
         cursor = conn.cursor()
         for item in js_queue:
-            # Build the nested tree for Fairos's Accordion UI
+            # Build the nested tree for the UI
             tree_results.append(_build_nested_tree(item['name'], item['qty'], cursor))
             # Prep the tuple format needed for the aggregator
             queue_tuples.append((item['name'], item['qty']))
             
-    # 1. Get total raw materials using Ateya's existing aggregator
+    # Get total raw materials using the aggregator
     total_raw_materials = aggregate_queue(queue_tuples)
     
-    # 2. Get user's current inventory using Noor's new database function
-    current_inventory = get_inventory_db()
+    # Format the dictionary with both keys so the frontend never gets 'undefined'
+    formatted_totals = [{"name": mat, "qty": amount, "quantity": amount} for mat, amount in total_raw_materials.items()]
     
-    # 3. Calculate deficit (Ateya's core mathematical upgrade)
-    deficit_materials = {}
-    for item, total_needed in total_raw_materials.items():
-        owned = current_inventory.get(item, 0)
-        still_need = total_needed - owned
-        
-        # Only add to the deficit list if the user doesn't have enough
-        if still_need > 0:
-            deficit_materials[item] = still_need
-            
-    # Pass the multi-part payload back across the Eel bridge
+    # Pass only the visual tree and raw materials back across the Eel bridge
     return {
         "visual_tree": tree_results,
-        "deficit_totals": deficit_materials,
-        "total_raw_materials": total_raw_materials
+        "total_raw_materials": formatted_totals
     }
 def _build_nested_tree(item_name, qty, cursor):
     # Create the current node
@@ -234,28 +224,6 @@ def _build_nested_tree(item_name, qty, cursor):
         
     return node
         
-    
-
-@eel.expose
-def update_inventory_db(item_name, quantity):
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        if quantity <= 0:
-            cursor.execute("DELETE FROM inventory WHERE item_name = ?", (item_name,))
-        else:
-            cursor.execute('''
-                INSERT INTO inventory (item_name, quantity) 
-                VALUES (?, ?)
-                ON CONFLICT(item_name) DO UPDATE SET quantity = ?
-            ''', (item_name, quantity, quantity))
-        conn.commit()
-
-@eel.expose
-def get_inventory_db():
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT item_name, quantity FROM inventory")
-        return {row[0]: row[1] for row in cursor.fetchall()}
 
 if __name__ == "__main__":
     print("--- TESTING M3 TASK 2: Recursive BOM ---")
