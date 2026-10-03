@@ -1,0 +1,31 @@
+{
+    "Ancient Armor": {
+        "name": "Ancient Armor",
+        "quantity": 5,
+        "children": [
+            {
+                "name": "Soralite Ingot",
+                "quantity": 150,
+                "children": [
+                    { "name": "Soralite", "quantity": 300, "children": [] },
+                    { "name": "Pure Quartz", "quantity": 300, "children": [] }
+                ]
+            },
+            {
+                "name": "AI Core",
+                "quantity": 15,
+                "children": [
+                    { "name": "Computer", "quantity": 75, "children": [] }
+                ]
+            }
+        ]
+    },
+    "Handgun": {
+        "name": "Handgun",
+        "quantity": 1,
+        "children": [
+            { "name": "High Quality Pal Oil", "quantity": 15, "children": [] },
+            { "name": "Ingot", "quantity": 50, "children": [] }
+        ]
+    }
+}
