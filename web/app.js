@@ -45,6 +45,17 @@ async function loadQueueFromDB() {
     activeQueue = await eel.read_active_queue()();
     renderQueue();
     
+    // THE FIX: If the queue is empty, force clear the tree and stop processing
+    if (activeQueue.length === 0) {
+        localStorage.removeItem('calculatedTreeData');
+        const breakdownContainer = document.getElementById('material-breakdown');
+        if (breakdownContainer) {
+            breakdownContainer.innerHTML = '<div class="placeholder-text">Your queue is empty.</div>';
+        }
+        localStorage.setItem('activeQueueItems', JSON.stringify([]));
+        return;
+    }
+
     // Check if we have a saved calculated tree from a previous visit and restore it
     const savedTree = localStorage.getItem('calculatedTreeData');
     if (savedTree) {
