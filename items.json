@@ -21,6 +21,7 @@
         ]
     },
     "Handgun": {
+        "category": "Weapon",
         "name": "Handgun",
         "quantity": 1,
         "children": [
