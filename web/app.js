@@ -17,7 +17,7 @@ async function fetchItems() {
         return;
     }
     
-    const items = await eel.search_items(query, category)();
+    const items = await eel.fetch_external_search_items(query, category)();
     resultsDiv.innerHTML = '';
     
     if (items.length === 0) {
@@ -150,7 +150,7 @@ if (calculateBtn) {
         breakdownContainer.innerHTML = '<div class="placeholder-text">Calculating base materials...</div>';
 
         try {
-            const calculatedData = await eel.calculate_recipe_tree(activeQueue)();
+            const calculatedData = await eel.calculate_external_recipe_tree(activeQueue)();
             
             // Pass the raw materials array into the renderer function
             renderMaterialBreakdown(calculatedData.visual_tree);
